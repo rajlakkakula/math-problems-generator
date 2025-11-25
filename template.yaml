@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Math Problems Generator - SAM Template for deploying the math problems generator
+  as an AWS Lambda function with API Gateway.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 512
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+
+Resources:
+  MathGeneratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub math-problems-generator-${Environment}
+      CodeUri: src/
+      Handler: math_generator.aws_lambda.lambda_handler
+      Description: Generates math problems for elementary school students
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: '*'
+      Events:
+        GenerateProblems:
+          Type: Api
+          Properties:
+            Path: /generate
+            Method: post
+            RestApiId: !Ref MathGeneratorApi
+        GenerateProblemsGet:
+          Type: Api
+          Properties:
+            Path: /generate
+            Method: get
+            RestApiId: !Ref MathGeneratorApi
+        ExplainConcept:
+          Type: Api
+          Properties:
+            Path: /explain
+            Method: post
+            RestApiId: !Ref MathGeneratorApi
+        GenerateWorksheet:
+          Type: Api
+          Properties:
+            Path: /worksheet
+            Method: post
+            RestApiId: !Ref MathGeneratorApi
+
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub math-problems-generator-health-${Environment}
+      CodeUri: src/
+      Handler: math_generator.aws_lambda.health_check
+      Description: Health check endpoint for the math problems generator
+      MemorySize: 128
+      Timeout: 10
+      Events:
+        HealthCheck:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: get
+            RestApiId: !Ref MathGeneratorApi
+
+  MathGeneratorApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub math-problems-generator-api-${Environment}
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET, POST, OPTIONS'"
+        AllowHeaders: "'Content-Type, Authorization'"
+        AllowOrigin: "'*'"
+      EndpointConfiguration:
+        Type: REGIONAL
+
+Outputs:
+  MathGeneratorApi:
+    Description: API Gateway endpoint URL for the Math Problems Generator
+    Value: !Sub "https://${MathGeneratorApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    
+  MathGeneratorFunctionArn:
+    Description: Math Generator Lambda Function ARN
+    Value: !GetAtt MathGeneratorFunction.Arn
+    
+  HealthCheckEndpoint:
+    Description: Health check endpoint URL
+    Value: !Sub "https://${MathGeneratorApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/health"
