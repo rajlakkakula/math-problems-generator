@@ -17,12 +17,13 @@ class TestGetLLM:
         """Test that get_llm returns an LLM instance."""
         llm = get_llm()
         assert llm is not None
-        assert llm.model == "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0"
+        assert llm.model.startswith("openai/")
+        assert "gpt" in llm.model.lower()
 
     def test_get_llm_with_custom_model(self) -> None:
         """Test get_llm with custom model ID."""
-        llm = get_llm(model_id="anthropic.claude-3-haiku-20240307-v1:0")
-        assert "haiku" in llm.model
+        llm = get_llm(model_id="gpt-3.5-turbo")
+        assert "gpt-3.5-turbo" in llm.model
 
 
 class TestCreateMathConceptExpert:

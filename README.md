@@ -6,7 +6,7 @@ This repository consists of codebase that generates math concepts and math probl
 
 - **Grade-Appropriate Content**: Generates math problems tailored for Kindergarten through Grade 5
 - **Multiple Math Topics**: Supports counting, addition, subtraction, multiplication, division, fractions, decimals, geometry, measurement, word problems, patterns, time, and money
-- **AI-Powered Generation**: Uses CrewAI with AWS Bedrock (Claude) for intelligent problem creation
+- **AI-Powered Generation**: Uses CrewAI with OpenAI (GPT-4) for intelligent problem creation
 - **Concept Explanations**: Provides age-appropriate explanations of math concepts
 - **Worksheet Generation**: Creates complete worksheets with problems, hints, and answer keys
 - **AWS Lambda Deployment**: Ready for serverless deployment on AWS
@@ -16,8 +16,7 @@ This repository consists of codebase that generates math concepts and math probl
 ### Prerequisites
 
 - Python 3.10 or higher
-- AWS account with Bedrock access (for LLM features)
-- AWS CLI configured with appropriate credentials
+- OpenAI API key (for LLM features)
 
 ### Local Installation
 
@@ -26,15 +25,25 @@ This repository consists of codebase that generates math concepts and math probl
 git clone https://github.com/rajlakkakula/math-problems-generator.git
 cd math-problems-generator
 
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Create and activate virtual environment using uv
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies using uv
+uv pip install -r requirements.txt
 
 # Install in development mode
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
+
+# Create .env file and add your OpenAI API key
+cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY
+
+# Alternative using pip (commented for reference):
+# python -m venv venv
+# source venv/bin/activate
+# pip install -r requirements.txt
+# pip install -e ".[dev]"
 ```
 
 ## Usage
@@ -42,13 +51,22 @@ pip install -e ".[dev]"
 ### Command Line Interface
 
 ```bash
-# Generate 5 addition problems for Grade 1
+# Generate 5 addition problems for Grade 1 (automatically creates PDF)
 math-generator --grade grade_1 --topic addition --num-problems 5
 
-# Explain multiplication concept for Grade 3
+# Generate problems with weekly frequency indicator in PDF filename
+math-generator --grade grade_2 --topic subtraction --frequency weekly
+
+# Disable PDF generation (text output only)
+math-generator --grade grade_1 --topic addition --no-pdf
+
+# Specify custom output directory for PDFs
+math-generator --grade grade_3 --topic multiplication --output-dir my_worksheets
+
+# Explain multiplication concept for Grade 3 (generates concept PDF)
 math-generator --grade grade_3 --topic multiplication --action explain
 
-# Generate a complete worksheet
+# Generate a complete worksheet (generates formatted worksheet PDF)
 math-generator --grade grade_2 --topic subtraction --action worksheet
 
 # List available topics for a grade
@@ -57,7 +75,7 @@ math-generator --grade grade_4 --list-topics
 # List all grade levels
 math-generator --list-grades
 
-# Save output to file
+# Save text output to file (in addition to PDF)
 math-generator --grade grade_1 --topic addition --output problems.txt
 
 # Output in JSON format
@@ -73,23 +91,48 @@ from math_generator import MathProblemsCrew, GradeLevel, MathTopic
 crew = MathProblemsCrew(
     grade=GradeLevel.GRADE_2,
     topic=MathTopic.ADDITION,
-    verbose=True
+    verbose=True,
+    output_dir="output"  # Directory for PDF files
 )
 
-# Generate problems
+# Generate problems (automatically creates PDF)
 result = crew.generate_problems(
     num_problems=5,
     difficulty=2,
     include_hints=True,
-    include_review=True
+    include_review=True,
+    generate_pdf=True,  # Default is True
+    frequency="daily"   # or "weekly"
+)
+# Access PDF path: result["pdf_path"]
+
+# Explain a concept (generates concept explanation PDF)
+explanation = crew.explain_concept(
+    generate_pdf=True,
+    frequency="weekly"
 )
 
-# Explain a concept
-explanation = crew.explain_concept()
-
-# Generate a complete worksheet
-worksheet = crew.generate_worksheet(num_problems=10)
+# Generate a complete worksheet (generates formatted worksheet PDF)
+worksheet = crew.generate_worksheet(
+    num_problems=10,
+    generate_pdf=True,
+    frequency="weekly"
+)
 ```
+
+### PDF Output
+
+All generated content is automatically compiled into professional PDF documents with:
+
+- **Structured Format**: Clear sections for concepts, problems, hints, and answers
+- **Color-Coded Content**: Different colors for problems, answers, and hints
+- **Daily/Weekly Naming**: Files are named with timestamps and frequency indicators
+- **Organized Storage**: All PDFs saved to the `output/` directory (customizable)
+
+Example PDF filenames:
+- `grade_1_addition_problems_daily_20251125.pdf`
+- `grade_3_multiplication_worksheet_weekly_20251125.pdf`
+- `grade_2_subtraction_concepts_weekly_20251125.pdf`
 
 ### AWS Lambda API
 

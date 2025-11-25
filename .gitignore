@@ -53,6 +53,7 @@ coverage.xml
 # Environments
 .env
 .venv
+.venv/
 env/
 venv/
 ENV/
@@ -83,8 +84,15 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
+# Generated PDFs and output
+output/
+*.pdf
+
 # Temporary files
 tmp/
 temp/
 *.tmp
 *.temp
+
+PDF_GENERATION.md
+SETUP_OPENAI.md

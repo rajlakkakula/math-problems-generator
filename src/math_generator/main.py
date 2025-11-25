@@ -91,6 +91,34 @@ Examples:
     )
 
     parser.add_argument(
+        "--pdf",
+        action="store_true",
+        help="Generate PDF output (default: True, use --no-pdf to disable)",
+        default=True,
+    )
+
+    parser.add_argument(
+        "--no-pdf",
+        action="store_true",
+        help="Disable PDF generation",
+    )
+
+    parser.add_argument(
+        "--frequency",
+        type=str,
+        choices=["daily", "weekly"],
+        default="daily",
+        help="Frequency indicator for PDF filename (default: daily)",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="output",
+        help="Directory for PDF output (default: output)",
+    )
+
+    parser.add_argument(
         "--list-topics",
         action="store_true",
         help="List available topics for the specified grade",
@@ -171,6 +199,10 @@ def format_output(result: dict[str, Any], output_format: str) -> str:
     lines.append("=" * 60)
     lines.append(f"Grade: {result.get('grade', 'N/A')}")
     lines.append(f"Topic: {result.get('topic', 'N/A')}")
+    
+    if "pdf_path" in result:
+        lines.append(f"PDF Generated: {result['pdf_path']}")
+    
     lines.append("=" * 60)
 
     if "explanation" in result:
@@ -233,10 +265,13 @@ def main() -> int:
         if not args.quiet:
             print(f"Initializing math problems generator for {grade.value} - {topic.value}...")
 
+        generate_pdf = args.pdf and not args.no_pdf
+
         crew = MathProblemsCrew(
             grade=grade,
             topic=topic,
             verbose=args.verbose,
+            output_dir=args.output_dir,
         )
 
         # Execute the requested action
@@ -248,17 +283,24 @@ def main() -> int:
                 difficulty=args.difficulty,
                 include_hints=not args.no_hints,
                 include_review=not args.no_review,
+                generate_pdf=generate_pdf,
+                frequency=args.frequency,
             )
         elif args.action == "explain":
             if not args.quiet:
                 print("Generating concept explanation...")
-            result = crew.explain_concept()
+            result = crew.explain_concept(
+                generate_pdf=generate_pdf,
+                frequency=args.frequency,
+            )
         elif args.action == "worksheet":
             if not args.quiet:
                 print(f"Generating worksheet with {args.num_problems} problems...")
             result = crew.generate_worksheet(
                 num_problems=args.num_problems,
                 difficulty=args.difficulty,
+                generate_pdf=generate_pdf,
+                frequency=args.frequency,
             )
         else:
             print(f"Error: Unknown action '{args.action}'")

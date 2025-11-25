@@ -11,6 +11,7 @@ from math_generator.math_agents import (
     create_problem_reviewer,
     get_llm,
 )
+from math_generator.pdf_generator import MathPDFGenerator
 from math_generator.math_concepts import (
     GradeLevel,
     MathTopic,
@@ -35,6 +36,7 @@ class MathProblemsCrew:
         topic: MathTopic = MathTopic.ADDITION,
         llm: LLM | None = None,
         verbose: bool = True,
+        output_dir: str = "output",
     ):
         """Initialize the math problems crew.
 
@@ -43,11 +45,13 @@ class MathProblemsCrew:
             topic: The math topic to focus on.
             llm: Optional LLM instance. If not provided, uses default.
             verbose: Whether to show verbose output.
+            output_dir: Directory to save generated PDFs.
         """
         self.grade = grade
         self.topic = topic
         self.llm = llm or get_llm()
         self.verbose = verbose
+        self.pdf_generator = MathPDFGenerator(output_dir=output_dir)
 
         # Validate that topic is appropriate for grade
         valid_topics = get_topics_for_grade(grade)
@@ -77,6 +81,8 @@ class MathProblemsCrew:
         difficulty: int = 1,
         include_hints: bool = True,
         include_review: bool = True,
+        generate_pdf: bool = True,
+        frequency: str = "daily",
     ) -> dict[str, Any]:
         """Generate math problems using the crew.
 
@@ -85,9 +91,11 @@ class MathProblemsCrew:
             difficulty: Difficulty level (1-5).
             include_hints: Whether to generate hints for problems.
             include_review: Whether to review problems for quality.
+            generate_pdf: Whether to generate a PDF file.
+            frequency: 'daily' or 'weekly' for PDF filename.
 
         Returns:
-            Dictionary containing generated problems and metadata.
+            Dictionary containing generated problems, metadata, and PDF path if generated.
         """
         agents = self._create_agents()
         tasks = []
@@ -132,7 +140,7 @@ class MathProblemsCrew:
 
         result = crew.kickoff()
 
-        return {
+        result_data = {
             "grade": self.grade.value,
             "topic": self.topic.value,
             "num_problems": num_problems,
@@ -141,11 +149,27 @@ class MathProblemsCrew:
             "tasks_output": [str(task.output) for task in tasks if task.output],
         }
 
-    def explain_concept(self) -> dict[str, Any]:
+        # Generate PDF if requested
+        if generate_pdf:
+            pdf_path = self.pdf_generator.generate_problems_pdf(
+                data=result_data,
+                frequency=frequency,
+                include_answers=True,
+                include_hints=include_hints,
+            )
+            result_data["pdf_path"] = pdf_path
+
+        return result_data
+
+    def explain_concept(self, generate_pdf: bool = True, frequency: str = "weekly") -> dict[str, Any]:
         """Generate a concept explanation.
 
+        Args:
+            generate_pdf: Whether to generate a PDF file.
+            frequency: 'daily' or 'weekly' for PDF filename.
+
         Returns:
-            Dictionary containing the concept explanation.
+            Dictionary containing the concept explanation and PDF path if generated.
         """
         agents = self._create_agents()
 
@@ -164,26 +188,39 @@ class MathProblemsCrew:
 
         result = crew.kickoff()
 
-        return {
+        result_data = {
             "grade": self.grade.value,
             "topic": self.topic.value,
             "description": get_concept_description(self.topic, self.grade),
             "explanation": str(result),
         }
 
+        # Generate PDF if requested
+        if generate_pdf:
+            pdf_path = self.pdf_generator.generate_concept_pdf(
+                data=result_data, frequency=frequency
+            )
+            result_data["pdf_path"] = pdf_path
+
+        return result_data
+
     def generate_worksheet(
         self,
         num_problems: int = 10,
         difficulty: int = 1,
+        generate_pdf: bool = True,
+        frequency: str = "weekly",
     ) -> dict[str, Any]:
         """Generate a complete worksheet.
 
         Args:
             num_problems: Number of problems for the worksheet.
             difficulty: Difficulty level (1-5).
+            generate_pdf: Whether to generate a PDF file.
+            frequency: 'daily' or 'weekly' for PDF filename.
 
         Returns:
-            Dictionary containing the complete worksheet.
+            Dictionary containing the complete worksheet and PDF path if generated.
         """
         agents = self._create_agents()
         tasks = []
@@ -243,13 +280,22 @@ class MathProblemsCrew:
 
         result = crew.kickoff()
 
-        return {
+        result_data = {
             "grade": self.grade.value,
             "topic": self.topic.value,
             "num_problems": num_problems,
             "difficulty": difficulty,
             "worksheet": str(result),
         }
+
+        # Generate PDF if requested
+        if generate_pdf:
+            pdf_path = self.pdf_generator.generate_worksheet_pdf(
+                data=result_data, frequency=frequency
+            )
+            result_data["pdf_path"] = pdf_path
+
+        return result_data
 
 
 def generate_problems_for_grade(

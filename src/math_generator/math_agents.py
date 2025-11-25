@@ -1,22 +1,32 @@
 """CrewAI agents for math problem generation."""
 
+import os
+from dotenv import load_dotenv
 from crewai import LLM, Agent
 
 from math_generator.math_concepts import GradeLevel, MathTopic
 
+# Load environment variables from .env file
+load_dotenv()
 
-def get_llm(model_id: str = "anthropic.claude-3-5-sonnet-20241022-v2:0") -> LLM:
+
+def get_llm(model_id: str | None = None) -> LLM:
     """Get the LLM instance for agents.
 
     Args:
-        model_id: The AWS Bedrock model ID to use.
+        model_id: The OpenAI model ID to use. If not provided, uses the
+                 OPENAI_MODEL_NAME environment variable or defaults to 'gpt-4'.
 
     Returns:
-        An LLM instance configured for AWS Bedrock.
+        An LLM instance configured for OpenAI.
     """
+    if model_id is None:
+        model_id = os.getenv("OPENAI_MODEL_NAME", "gpt-4")
+    
     return LLM(
-        model=f"bedrock/{model_id}",
+        model=f"openai/{model_id}",
         temperature=0.7,
+        api_key=os.getenv("OPENAI_API_KEY"),
     )
 
 
