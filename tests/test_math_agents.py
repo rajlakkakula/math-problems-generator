@@ -35,7 +35,7 @@ class TestCreateMathConceptExpert:
             grade=GradeLevel.GRADE_1,
             topic=MathTopic.ADDITION,
         )
-        assert agent.role == "Math Concept Expert"
+        assert agent.role == "Mathematics Concept Expert"
         assert "addition" in agent.goal.lower()
         assert "grade 1" in agent.goal.lower()
 
@@ -68,7 +68,7 @@ class TestCreateProblemGenerator:
             grade=GradeLevel.GRADE_1,
             topic=MathTopic.ADDITION,
         )
-        assert agent.role == "Math Problem Generator"
+        assert agent.role == "Mathematics Problem Generator"
         assert "addition" in agent.goal.lower()
 
     def test_agent_for_different_topics(self) -> None:
@@ -105,7 +105,7 @@ class TestCreateHintProvider:
     def test_create_hint_provider_agent(self) -> None:
         """Test creating hint provider agent."""
         agent = create_hint_provider(grade=GradeLevel.GRADE_2)
-        assert agent.role == "Math Hint Provider"
+        assert agent.role == "Mathematics Hint Provider"
         assert "grade 2" in agent.goal.lower()
 
     def test_hint_provider_backstory(self) -> None:

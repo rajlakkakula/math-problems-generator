@@ -4,11 +4,14 @@ This repository consists of codebase that generates math concepts and math probl
 
 ## Features
 
+- **📚 Daily Curriculum System**: Sequential concept building with automatic progress tracking
 - **Grade-Appropriate Content**: Generates math problems tailored for Kindergarten through Grade 5
-- **Multiple Math Topics**: Supports counting, addition, subtraction, multiplication, division, fractions, decimals, geometry, measurement, word problems, patterns, time, and money
+- **Multiple Math Topics**: Supports 16 topics including counting, operations, fractions, decimals, geometry, measurement, data & statistics, ratios, and more
 - **AI-Powered Generation**: Uses CrewAI with OpenAI (GPT-4) for intelligent problem creation
-- **Concept Explanations**: Provides age-appropriate explanations of math concepts
+- **Concept Explanations**: Provides age-appropriate explanations of math concepts with sequential building
 - **Worksheet Generation**: Creates complete worksheets with problems, hints, and answer keys
+- **PDF Output**: Professional, color-coded PDFs for all generated content
+- **Progress Tracking**: Maintains curriculum progress for each grade level
 - **AWS Lambda Deployment**: Ready for serverless deployment on AWS
 
 ## Installation
@@ -48,6 +51,37 @@ cp .env.example .env
 
 ## Usage
 
+### 🆕 Daily Curriculum Generator (Recommended)
+
+**Generate sequential, building-block learning materials for daily use:**
+
+```bash
+# Generate today's content for Grade 3 (concept guide + worksheet)
+python -m math_generator.daily_cli --grade grade_3
+
+# Generate for all grades at once
+python -m math_generator.daily_cli --all-grades
+
+# Check progress for a grade
+python -m math_generator.daily_cli --grade grade_2 --status
+
+# View weekly plan
+python -m math_generator.daily_cli --grade grade_4 --week-plan
+
+# Custom number of problems
+python -m math_generator.daily_cli --grade grade_5 --num-problems 15
+
+# Reset progress to start over
+python -m math_generator.daily_cli --grade grade_1 --reset
+```
+
+**What gets generated:**
+- 📚 **Concept Guide PDF**: Detailed explanation of the current topic
+- 📝 **Practice Worksheet PDF**: 10+ problems with hints and answers
+- 💾 **Progress Tracking**: Automatic advancement through topics
+
+**See [DAILY_CURRICULUM.md](DAILY_CURRICULUM.md) for complete documentation.**
+
 ### Command Line Interface
 
 ```bash
@@ -83,6 +117,37 @@ math-generator --grade grade_1 --topic addition --format json
 ```
 
 ### Python API
+
+#### Daily Curriculum API
+
+```python
+from math_generator.daily_curriculum import DailyCurriculum
+from math_generator.math_concepts import GradeLevel
+
+# Initialize curriculum for a grade
+curriculum = DailyCurriculum(
+    grade=GradeLevel.GRADE_3,
+    output_dir="output",
+    verbose=True
+)
+
+# Generate today's content (concept guide + worksheet)
+result = curriculum.generate_daily_content(
+    num_problems=10,
+    generate_concept_guide=True,
+    generate_worksheet=True
+)
+
+# Check progress
+summary = curriculum.get_progress_summary()
+print(f"Current topic: {summary['current_topic']}")
+print(f"Progress: {summary['progress_percentage']:.1f}%")
+
+# Get weekly plan
+plan = curriculum.generate_week_plan(days_per_topic=2)
+```
+
+#### Direct Problem Generation API
 
 ```python
 from math_generator import MathProblemsCrew, GradeLevel, MathTopic
@@ -180,18 +245,23 @@ Request body example:
 | Topic | K | 1 | 2 | 3 | 4 | 5 |
 |-------|---|---|---|---|---|---|
 | Counting | ✓ | ✓ | | | | |
+| Numbers & Operations | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Addition | ✓ | ✓ | ✓ | ✓ | | |
 | Subtraction | ✓ | ✓ | ✓ | ✓ | | |
 | Multiplication | | | ✓ | ✓ | ✓ | ✓ |
 | Division | | | | ✓ | ✓ | ✓ |
 | Fractions | | | | ✓ | ✓ | ✓ |
 | Decimals | | | | | ✓ | ✓ |
+| Ratios | | ✓ | ✓ | | ✓ | ✓ |
 | Geometry | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Measurement | | ✓ | ✓ | | ✓ | ✓ |
+| Measurement & Data | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Data & Statistics | | | ✓ | ✓ | ✓ | ✓ |
 | Word Problems | | | ✓ | ✓ | ✓ | ✓ |
-| Patterns | ✓ | ✓ | | | | |
+| Patterns | ✓ | ✓ | ✓ | | | |
 | Time | | ✓ | ✓ | ✓ | | |
-| Money | | | ✓ | ✓ | | |
+| Money | | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Total Topics:** 16 comprehensive mathematical concepts aligned with Wake County, NC standards
 
 ## Project Structure
 
@@ -199,25 +269,33 @@ Request body example:
 math-problems-generator/
 ├── src/
 │   └── math_generator/
-│       ├── __init__.py         # Package initialization
-│       ├── math_concepts.py    # Math concepts and data models
-│       ├── math_agents.py      # CrewAI agent definitions
-│       ├── math_tasks.py       # CrewAI task definitions
-│       ├── math_crew.py        # Crew orchestration
-│       ├── aws_lambda.py       # AWS Lambda handler
-│       └── main.py             # CLI entry point
+│       ├── __init__.py            # Package initialization
+│       ├── math_concepts.py       # Math concepts and data models
+│       ├── math_agents.py         # CrewAI agent definitions
+│       ├── math_tasks.py          # CrewAI task definitions
+│       ├── math_crew.py           # Crew orchestration
+│       ├── daily_curriculum.py    # 🆕 Daily curriculum system
+│       ├── daily_cli.py           # 🆕 Daily curriculum CLI
+│       ├── pdf_generator.py       # PDF generation module
+│       ├── aws_lambda.py          # AWS Lambda handler
+│       └── main.py                # CLI entry point
 ├── tests/
-│   ├── test_math_concepts.py   # Tests for math concepts
-│   ├── test_math_agents.py     # Tests for agents
-│   ├── test_math_tasks.py      # Tests for tasks
-│   ├── test_math_crew.py       # Tests for crew
-│   └── test_aws_lambda.py      # Tests for Lambda handler
-├── template.yaml               # AWS SAM template
-├── samconfig.toml              # SAM configuration
-├── pyproject.toml              # Project configuration
-├── requirements.txt            # Python dependencies
-├── LICENSE                     # MIT License
-└── README.md                   # This file
+│   ├── test_math_concepts.py      # Tests for math concepts
+│   ├── test_math_agents.py        # Tests for agents
+│   ├── test_math_tasks.py         # Tests for tasks
+│   ├── test_math_crew.py          # Tests for crew
+│   ├── test_pdf_generator.py      # Tests for PDF generation
+│   └── test_aws_lambda.py         # Tests for Lambda handler
+├── output/                        # Generated PDFs and progress files
+├── demo_daily.py                  # 🆕 Daily curriculum demo
+├── DAILY_CURRICULUM.md            # 🆕 Daily curriculum documentation
+├── template.yaml                  # AWS SAM template
+├── samconfig.toml                 # SAM configuration
+├── pyproject.toml                 # Project configuration
+├── requirements.txt               # Python dependencies
+├── .env                           # Environment configuration
+├── LICENSE                        # MIT License
+└── README.md                      # This file
 ```
 
 ## Development
@@ -258,10 +336,18 @@ mypy src
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `AWS_REGION` | AWS region for Bedrock | `us-east-1` |
-| `BEDROCK_MODEL_ID` | Claude model ID | `anthropic.claude-3-5-sonnet-20241022-v2:0` |
+Create a `.env` file in the project root:
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API key for GPT-4 | ✅ Yes |
+| `OPENAI_MODEL_NAME` | Model to use | No (default: gpt-4) |
+
+Example `.env` file:
+```bash
+OPENAI_API_KEY=sk-your-api-key-here
+OPENAI_MODEL_NAME=gpt-4  # Optional
+```
 
 ## License
 

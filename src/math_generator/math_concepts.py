@@ -25,13 +25,16 @@ class MathTopic(str, Enum):
     MULTIPLICATION = "multiplication"
     DIVISION = "division"
     FRACTIONS = "fractions"
+    RATIOS = "ratios"
     DECIMALS = "decimals"
     GEOMETRY = "geometry"
-    MEASUREMENT = "measurement"
+    MEASUREMENT_AND_DATA = "measurement_and_data"
     WORD_PROBLEMS = "word_problems"
     PATTERNS = "patterns"
     TIME = "time"
     MONEY = "money"
+    NUMBERS_AND_OPERATIONS = "numbers_and_operations"
+    DATA_AND_STATISTICS = "data_and_statistics"
 
 
 class MathConcept(BaseModel):
@@ -83,7 +86,9 @@ GRADE_TOPICS: dict[GradeLevel, list[MathTopic]] = {
         MathTopic.PATTERNS,
         MathTopic.GEOMETRY,
         MathTopic.TIME,
-        MathTopic.MEASUREMENT,
+        MathTopic.MEASUREMENT_AND_DATA,
+        MathTopic.MONEY,
+        MathTopic.RATIOS
     ],
     GradeLevel.GRADE_2: [
         MathTopic.ADDITION,
@@ -92,8 +97,11 @@ GRADE_TOPICS: dict[GradeLevel, list[MathTopic]] = {
         MathTopic.GEOMETRY,
         MathTopic.TIME,
         MathTopic.MONEY,
-        MathTopic.MEASUREMENT,
+        MathTopic.MEASUREMENT_AND_DATA,
         MathTopic.WORD_PROBLEMS,
+        MathTopic.DATA_AND_STATISTICS,
+        MathTopic.PATTERNS,
+        MathTopic.RATIOS
     ],
     GradeLevel.GRADE_3: [
         MathTopic.ADDITION,
@@ -105,6 +113,8 @@ GRADE_TOPICS: dict[GradeLevel, list[MathTopic]] = {
         MathTopic.TIME,
         MathTopic.MONEY,
         MathTopic.WORD_PROBLEMS,
+        MathTopic.DATA_AND_STATISTICS,
+        MathTopic.MEASUREMENT_AND_DATA,
     ],
     GradeLevel.GRADE_4: [
         MathTopic.MULTIPLICATION,
@@ -112,8 +122,11 @@ GRADE_TOPICS: dict[GradeLevel, list[MathTopic]] = {
         MathTopic.FRACTIONS,
         MathTopic.DECIMALS,
         MathTopic.GEOMETRY,
-        MathTopic.MEASUREMENT,
+        MathTopic.MEASUREMENT_AND_DATA,
+        MathTopic.DATA_AND_STATISTICS,
+        MathTopic.RATIOS,
         MathTopic.WORD_PROBLEMS,
+        MathTopic.MONEY
     ],
     GradeLevel.GRADE_5: [
         MathTopic.MULTIPLICATION,
@@ -121,8 +134,11 @@ GRADE_TOPICS: dict[GradeLevel, list[MathTopic]] = {
         MathTopic.FRACTIONS,
         MathTopic.DECIMALS,
         MathTopic.GEOMETRY,
-        MathTopic.MEASUREMENT,
+        MathTopic.MEASUREMENT_AND_DATA,
+        MathTopic.RATIOS,
+        MathTopic.DATA_AND_STATISTICS,
         MathTopic.WORD_PROBLEMS,
+        MathTopic.MONEY
     ],
 }
 
@@ -195,7 +211,7 @@ def get_concept_description(topic: MathTopic, grade: GradeLevel) -> str:
             GradeLevel.GRADE_4: "Calculate area and perimeter",
             GradeLevel.GRADE_5: "Calculate volume and surface area",
         },
-        MathTopic.MEASUREMENT: {
+        MathTopic.MEASUREMENT_AND_DATA: {
             GradeLevel.GRADE_1: "Compare and order objects by length",
             GradeLevel.GRADE_2: "Measure length using standard units",
             GradeLevel.GRADE_4: "Convert between units of measurement",
@@ -219,6 +235,28 @@ def get_concept_description(topic: MathTopic, grade: GradeLevel) -> str:
         MathTopic.MONEY: {
             GradeLevel.GRADE_2: "Identify coins and count money",
             GradeLevel.GRADE_3: "Count money and make change",
+            GradeLevel.GRADE_4: "Solve word problems involving money and decimals",
+            GradeLevel.GRADE_5: "Calculate with money including tax and discounts",
+        },
+        MathTopic.RATIOS: {
+            GradeLevel.GRADE_1: "Introduction to comparing quantities (more, less, equal)",
+            GradeLevel.GRADE_2: "Simple comparisons and basic ratios concepts",
+            GradeLevel.GRADE_4: "Introduction to ratios and proportional relationships",
+            GradeLevel.GRADE_5: "Solve problems involving ratios and rates",
+        },
+        MathTopic.NUMBERS_AND_OPERATIONS: {
+            GradeLevel.KINDERGARTEN: "Understand numbers 0-20 and basic operations",
+            GradeLevel.GRADE_1: "Place value and number operations within 100",
+            GradeLevel.GRADE_2: "Place value to 1000 and number properties",
+            GradeLevel.GRADE_3: "Place value and operations with larger numbers",
+            GradeLevel.GRADE_4: "Multi-digit operations and number theory",
+            GradeLevel.GRADE_5: "Operations with whole numbers, decimals, and fractions",
+        },
+        MathTopic.DATA_AND_STATISTICS: {
+            GradeLevel.GRADE_2: "Read and interpret simple graphs and charts",
+            GradeLevel.GRADE_3: "Create and analyze bar graphs and picture graphs",
+            GradeLevel.GRADE_4: "Interpret line plots and solve problems using data",
+            GradeLevel.GRADE_5: "Analyze data sets and calculate mean, median, and mode",
         },
     }
 

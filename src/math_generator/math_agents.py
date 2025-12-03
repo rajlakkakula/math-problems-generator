@@ -35,7 +35,7 @@ def create_math_concept_expert(
     topic: MathTopic,
     llm: LLM | None = None,
 ) -> Agent:
-    """Create a math concept expert agent.
+    """Create a mathematics concept expert agent.
 
     This agent specializes in understanding and explaining math concepts
     appropriate for elementary school students.
@@ -59,8 +59,8 @@ def create_math_concept_expert(
         f"concepts for {grade_name} students."
     )
     backstory = (
-        f"You are an experienced elementary school math teacher who specializes "
-        f"in teaching {topic_name} to young students. You have a gift for "
+        f"You are an experienced elementary school mathematics teacher who specializes "
+        f"in teaching {topic_name} to young students in Wake County of North Carolina, USA. You have a gift for "
         "making complex mathematical concepts simple and engaging. You understand the "
         f"developmental stages of children in {grade_name} and adapt "
         "your explanations accordingly. You always use encouraging language and provide "
@@ -68,7 +68,7 @@ def create_math_concept_expert(
     )
 
     return Agent(
-        role="Math Concept Expert",
+        role="Mathematics Concept Expert",
         goal=goal,
         backstory=backstory,
         verbose=True,
@@ -116,7 +116,7 @@ def create_problem_generator(
     )
 
     return Agent(
-        role="Math Problem Generator",
+        role="Mathematics Problem Generator",
         goal=goal,
         backstory=backstory,
         verbose=True,
@@ -129,7 +129,7 @@ def create_problem_reviewer(
     grade: GradeLevel,
     llm: LLM | None = None,
 ) -> Agent:
-    """Create a math problem reviewer agent.
+    """Create a mathematics problem reviewer agent.
 
     This agent reviews generated problems for accuracy, age-appropriateness,
     and educational value.
@@ -147,7 +147,7 @@ def create_problem_reviewer(
     grade_name = grade.value.replace("_", " ")
 
     goal = (
-        "Review and validate math problems to ensure they are accurate, "
+        "Review and validate mathematics problems to ensure they are accurate, "
         f"age-appropriate for {grade_name}, and educationally sound."
     )
     backstory = (
@@ -204,7 +204,7 @@ def create_hint_provider(
     )
 
     return Agent(
-        role="Math Hint Provider",
+        role="Mathematics Hint Provider",
         goal=goal,
         backstory=backstory,
         verbose=True,

@@ -54,13 +54,16 @@ class TestMathTopic:
             "multiplication",
             "division",
             "fractions",
+            "ratios",
             "decimals",
             "geometry",
-            "measurement",
+            "measurement_and_data",
             "word_problems",
             "patterns",
             "time",
             "money",
+            "numbers_and_operations",
+            "data_and_statistics",
         ]
         actual_topics = [t.value for t in MathTopic]
         assert actual_topics == expected_topics
@@ -244,6 +247,24 @@ class TestGetConceptDescription:
         # This should return a fallback description
         description = get_concept_description(MathTopic.DECIMALS, GradeLevel.KINDERGARTEN)
         assert len(description) > 0
+
+    def test_ratios_grade_5(self) -> None:
+        """Test ratios description for grade 5."""
+        description = get_concept_description(MathTopic.RATIOS, GradeLevel.GRADE_5)
+        assert "ratio" in description.lower() or "rate" in description.lower()
+        assert len(description) > 0
+
+    def test_data_and_statistics_grade_4(self) -> None:
+        """Test data and statistics description for grade 4."""
+        description = get_concept_description(MathTopic.DATA_AND_STATISTICS, GradeLevel.GRADE_4)
+        assert len(description) > 0
+        assert "data" in description.lower() or "plot" in description.lower()
+
+    def test_numbers_and_operations_grade_3(self) -> None:
+        """Test numbers and operations description for grade 3."""
+        description = get_concept_description(MathTopic.NUMBERS_AND_OPERATIONS, GradeLevel.GRADE_3)
+        assert len(description) > 0
+        assert "number" in description.lower() or "operation" in description.lower()
 
 
 class TestCreateMathConcept:
