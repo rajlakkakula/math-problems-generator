@@ -67,8 +67,10 @@ class MathPDFGenerator:
                 name="Problem",
                 parent=self.styles["Normal"],
                 fontSize=12,
-                spaceAfter=8,
+                spaceAfter=12,
+                spaceBefore=6,
                 leftIndent=20,
+                leading=16,
             )
         )
 
@@ -336,9 +338,9 @@ class MathPDFGenerator:
             if line.startswith("Problem "):
                 # Add previous problem if exists
                 if current_problem:
-                    problem_text = "\n".join(current_problem)
+                    problem_text = "<br/>".join(current_problem)
                     story.append(Paragraph(problem_text, self.styles["Problem"]))
-                    story.append(Spacer(1, 0.15 * inch))
+                    story.append(Spacer(1, 0.2 * inch))
                     current_problem = []
                 current_problem.append(f"<b>{line}</b>")
             elif line.startswith("Question:"):
@@ -356,9 +358,9 @@ class MathPDFGenerator:
         
         # Add the last problem
         if current_problem:
-            problem_text = "\n".join(current_problem)
+            problem_text = "<br/>".join(current_problem)
             story.append(Paragraph(problem_text, self.styles["Problem"]))
-            story.append(Spacer(1, 0.15 * inch))
+            story.append(Spacer(1, 0.2 * inch))
 
     def _add_answers_from_text(self, story: list, text: str) -> None:
         """Parse and add answers from text to the story.
