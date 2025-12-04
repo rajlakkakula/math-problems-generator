@@ -42,9 +42,9 @@ class MathPDFGenerator:
             ParagraphStyle(
                 name="CustomTitle",
                 parent=self.styles["Title"],
-                fontSize=24,
+                fontSize=18,
                 textColor=colors.HexColor("#2E86AB"),
-                spaceAfter=30,
+                spaceAfter=15,
                 alignment=1,  # Center
             )
         )
@@ -54,7 +54,7 @@ class MathPDFGenerator:
             ParagraphStyle(
                 name="SectionHeading",
                 parent=self.styles["Heading1"],
-                fontSize=16,
+                fontSize=14,
                 textColor=colors.HexColor("#A23B72"),
                 spaceAfter=12,
                 spaceBefore=12,
@@ -304,11 +304,30 @@ class MathPDFGenerator:
         story.append(Paragraph("Concept Explanation", self.styles["SectionHeading"]))
         story.append(Spacer(1, 0.2 * inch))
 
-        # Split explanation into paragraphs
+        # Split explanation into paragraphs and handle markdown headers
         for para in explanation.split("\n\n"):
-            if para.strip():
-                story.append(Paragraph(para.strip(), self.styles["Concept"]))
-                story.append(Spacer(1, 0.1 * inch))
+            para = para.strip()
+            if not para:
+                continue
+            
+            # Check for markdown bold headers
+            if para.startswith("**") and (":" in para or para.endswith("**")):
+                # Parse header and content separately
+                lines = para.split("\n", 1)
+                header = lines[0].strip("*").strip()
+                
+                # Add header in SectionHeading style
+                story.append(Paragraph(header, self.styles["SectionHeading"]))
+                
+                # Add remaining content in Concept style if present
+                if len(lines) > 1:
+                    content = lines[1].strip()
+                    if content:
+                        story.append(Paragraph(content, self.styles["Concept"]))
+            else:
+                story.append(Paragraph(para, self.styles["Concept"]))
+            
+            story.append(Spacer(1, 0.1 * inch))
 
         # Build PDF
         doc.build(story)
@@ -430,22 +449,70 @@ class MathPDFGenerator:
             story: List of reportlab flowables.
             text: Worksheet text.
         """
+        # Split content into sections
         sections = text.split("\n\n")
+        questions_content = []
+        answers_content = []
+        in_answer_section = False
+        
         for section in sections:
             section = section.strip()
-            if section:
-                # Detect section headers
-                if any(
+            if not section:
+                continue
+                
+            # Check if this is the answer key section
+            if "answer key" in section.lower():
+                in_answer_section = True
+                continue
+            
+            # Add to appropriate list
+            if in_answer_section:
+                answers_content.append(section)
+            else:
+                questions_content.append(section)
+        
+        # Add questions/problems section
+        for section in questions_content:
+            # Check if section starts with markdown bold headers
+            # (e.g., **Title:** or **Introduction:**)
+            if section.startswith("**") and (":" in section or section.endswith("**")):
+                # Parse header and content separately
+                lines = section.split("\n", 1)
+                header = lines[0].strip("*").strip()
+                
+                # Add header in SectionHeading style
+                story.append(Paragraph(header, self.styles["SectionHeading"]))
+                
+                # Add remaining content in Normal style if present
+                if len(lines) > 1:
+                    content = lines[1].strip()
+                    if content:
+                        story.append(Paragraph(content, self.styles["Normal"]))
+            else:
+                # Check for keyword-based headers without markdown
+                is_header = any(
                     keyword in section.lower()
                     for keyword in [
-                        "introduction",
-                        "review",
-                        "problems",
-                        "answer key",
-                        "challenge",
+                        "let's practice:",
+                        "concept review:",
+                        "challenge yourself:",
                     ]
-                ):
+                )
+                
+                if is_header:
                     story.append(Paragraph(section, self.styles["SectionHeading"]))
                 else:
                     story.append(Paragraph(section, self.styles["Normal"]))
+            
+            story.append(Spacer(1, 0.15 * inch))
+        
+        # Add page break before answers
+        if answers_content:
+            story.append(PageBreak())
+            story.append(Paragraph("Answer Key", self.styles["SectionHeading"]))
+            story.append(Spacer(1, 0.2 * inch))
+            
+            # Add answer content
+            for section in answers_content:
+                story.append(Paragraph(section, self.styles["Normal"]))
                 story.append(Spacer(1, 0.15 * inch))
